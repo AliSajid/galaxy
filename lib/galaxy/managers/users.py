@@ -18,6 +18,7 @@ from typing import (
 from markupsafe import escape
 from sqlalchemy import (
     and_,
+    delete,
     exc,
     func,
     select,
@@ -643,6 +644,20 @@ class UserManager(base.ModelManager, deletable.PurgableManagerMixin):
     def _get_user_by_email_case_insensitive(self, session, email):
         stmt = select(self.app.model.User).where(func.lower(self.app.model.User.email) == email.lower()).limit(1)
         return session.scalars(stmt).first()
+
+    def get_favorite_datatypes(self, user):
+        return [fd.datatype for fd in user.favorite_datatypes]
+
+    def add_favorite_datatype(self, user, datatype):
+        fd = model.UserFavoriteDatatype(datatype=datatype)
+        user.favorite_datatypes.append(fd)
+        self.session().add(user)
+        self.session().commit()
+
+    def delete_favorite_datatype(self, user, datatype):
+        stmt = delete(model.UserFavoriteDatatype).where(model.UserFavoriteDatatype.datatype == datatype)
+        self.session().execute(stmt)
+        self.session().commit()
 
 
 class UserSerializer(base.ModelSerializer, deletable.PurgableSerializerMixin):
