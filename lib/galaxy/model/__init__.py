@@ -824,6 +824,16 @@ class UserObjectstoreUsage(BaseModel):
     object_store_id: str
     total_disk_usage: float
 
+class UserFavoriteDatatype(Base, RepresentById):
+    """
+    Favorite Datatypes for each user
+    """
+    __tablename__ = "user_favorite_datatype"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("galaxy_user.id"))
+    datatype: Mapped[str] = mapped_column(String(255))
+    user: Mapped["User"] = relationship(back_populates="favorite_datatypes")
 
 class User(Base, Dictifiable, RepresentById):
     """
@@ -902,6 +912,7 @@ class User(Base, Dictifiable, RepresentById):
     )
     data_manager_histories: Mapped[List["DataManagerHistoryAssociation"]] = relationship(back_populates="user")
     roles: Mapped[List["UserRoleAssociation"]] = relationship(back_populates="user")
+    favorite_datatypes: Mapped[List["UserFavoriteDatatype"]] = relationship(back_populates="user")
     stored_workflows: Mapped[List["StoredWorkflow"]] = relationship(
         back_populates="user",
         primaryjoin=(lambda: User.id == StoredWorkflow.user_id),
